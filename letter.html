@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>a little letter for you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blush: #ffe3ec;
+    --blush-deep: #ffc7dc;
+    --rose: #f4779c;
+    --rose-deep: #e8567f;
+    --paper: #fffaf4;
+    --ink: #6b4a55;
+    --ink-soft: #a97a89;
+    --gold: #f2c14e;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 20%, #fff0f5 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, #ffe0ec 0%, transparent 50%),
+      linear-gradient(160deg, var(--blush) 0%, var(--blush-deep) 100%);
+    font-family: 'Quicksand', sans-serif;
+    color: var(--ink);
+    overflow-x:hidden;
+  }
+
+  .sky{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .drift{
+    position: absolute;
+    font-size: 22px;
+    opacity: 0.55;
+    animation: floaty linear infinite;
+    filter: drop-shadow(0 2px 3px rgba(232,86,127,0.15));
+  }
+  @keyframes floaty{
+    0%   { transform: translateY(110vh) rotate(-8deg); }
+    100% { transform: translateY(-10vh) rotate(8deg); }
+  }
+
+  .stage{
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 20px 80px;
+  }
+
+  .title{
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .title h1{
+    font-family: 'Caveat', cursive;
+    font-weight:700;
+    font-size: clamp(2.4rem, 6vw, 3.6rem);
+    color: var(--rose-deep);
+    margin: 0;
+    line-height: 1;
+  }
+  .title p{
+    margin: 8px 0 0;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+  }
+
+  /* envelope */
+  .envelope-wrap{
+    margin-top: 40px;
+    perspective: 1400px;
+  }
+
+  .envelope{
+    position: relative;
+    width: min(340px, 78vw);
+    height: calc(min(340px, 78vw) * 0.66);
+    cursor: pointer;
+    transition: transform 0.35s ease;
+  }
+  .envelope:hover{ transform: translateY(-4px); }
+  .envelope.open:hover{ transform: none; }
+
+  .env-body{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(155deg, #ffffff, #fff1f6);
+    border-radius: 10px;
+    box-shadow:
+      0 18px 30px -12px rgba(214, 90, 130, 0.35),
+      0 4px 10px rgba(214, 90, 130, 0.15);
+    overflow: hidden;
+  }
+
+  .env-body::before, .env-body::after{
+    content:"";
+    position: absolute;
+    top:0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+  }
+  /* left side */
+  .env-body::before{
+    left:0;
+    border-width: 0 0 100% 50%;
+    border-color: transparent transparent rgba(255,199,220,0.55) transparent;
+  }
+  /* right side */
+  .env-body::after{
+    right:0;
+    border-width: 0 50% 100% 0;
+    border-color: transparent transparent rgba(255,199,220,0.55) transparent;
+  }
+
+  .env-flap{
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 62%;
+    background: linear-gradient(155deg, #ffd3e2, #ffb8d2);
+    clip-path: polygon(0 0, 100% 0, 50% 78%);
+    transform-origin: top center;
+    transition: transform 0.7s cubic-bezier(.65,-0.15,.35,1.3);
+    z-index: 3;
+    box-shadow: 0 2px 6px rgba(214,90,130,0.15);
+  }
+  .envelope.open .env-flap{
+    transform: rotateX(180deg);
+    z-index: 1;
+  }
+
+  .seal{
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff9ab8, var(--rose-deep) 70%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 22px;
+    box-shadow: 0 3px 8px rgba(180,50,90,0.4), inset 0 -3px 6px rgba(0,0,0,0.15);
+    z-index: 4;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .envelope.open .seal{
+    opacity: 0;
+    transform: translate(-50%,-50%) scale(0.4);
+  }
+
+  .letter-peek{
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    top: 14%;
+    height: 78%;
+    background: var(--paper);
+    border-radius: 6px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    z-index: 2;
+    transition: transform 0.6s cubic-bezier(.22,1,.36,1) 0.15s;
+    transform: translateY(0%);
+  }
+  .envelope.open .letter-peek{
+    transform: translateY(-58%);
+    cursor: pointer;
+  }
+  .letter-peek .lines{
+    padding: 16px 18px;
+    display:flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .letter-peek .lines span{
+    display:block;
+    height: 6px;
+    border-radius: 4px;
+    background: #ffdfec;
+  }
+  .letter-peek .lines span:nth-child(1){ width: 70%; }
+  .letter-peek .lines span:nth-child(2){ width: 90%; }
+  .letter-peek .lines span:nth-child(3){ width: 55%; }
+
+  .hint{
+    margin-top: 22px;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    text-align: center;
+    min-height: 1.2em;
+  }
+
+  /* letter popup */
+  .overlay{
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+    background: rgba(120, 60, 85, 0.28);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+  .overlay.show{
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .paper{
+    position: relative;
+    width: min(560px, 100%);
+    max-height: 88vh;
+    background:
+      repeating-linear-gradient(#fffaf4 0 34px, #ffeef3 34px 35px);
+    background-color: var(--paper);
+    border-radius: 4px;
+    box-shadow: 0 30px 60px -15px rgba(120,50,80,0.45);
+    padding: 34px 30px 26px;
+    transform: translateY(24px) scale(0.96);
+    transition: transform 0.4s cubic-bezier(.22,1,.36,1);
+    display:flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .overlay.show .paper{ transform: translateY(0) scale(1); }
+
+  .paper::before{
+    content:"";
+    position:absolute;
+    left: 46px;
+    top:0; bottom:0;
+    width:1px;
+    background: rgba(232,86,127,0.18);
+    pointer-events: none;
+  }
+
+  .paper-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .paper-head h2{
+    font-family: 'Caveat', cursive;
+    color: var(--rose-deep);
+    font-size: 1.8rem;
+    margin: 0;
+  }
+  .close-btn{
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 50%;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .close-btn:hover{ background: var(--blush); color: var(--rose-deep); }
+
+  .to-row{
+    display:flex;
+    align-items:baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+    padding-left: 4px;
+  }
+  .to-row label{
+    font-family:'Caveat', cursive;
+    font-size: 1.25rem;
+    color: var(--ink-soft);
+  }
+  .to-row input{
+    flex:1;
+    border: none;
+    background: transparent;
+    border-bottom: 1px dashed rgba(232,86,127,0.35);
+    font-family:'Caveat', cursive;
+    font-size: 1.25rem;
+    color: var(--ink);
+    padding: 2px 4px;
+    outline: none;
+  }
+  .to-row input:focus{ border-bottom-color: var(--rose-deep); }
+
+  textarea{
+    flex: 1;
+    min-height: 260px;
+    resize: vertical;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: 'Caveat', cursive;
+    font-size: 1.5rem;
+    line-height: 35px;
+    color: var(--ink);
+    padding: 2px 4px 2px 4px;
+    margin-top: 6px;
+    position: relative;
+    z-index: 1;
+  }
+  textarea::placeholder{ color: #d9a6b6; }
+
+  .sticker-layer{
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .placed-sticker{
+    position: absolute;
+    font-size: 34px;
+    opacity: 0.16;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .btn{
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+  .btn:active{ transform: scale(0.96); }
+
+  .btn-ghost{
+    background: #fff;
+    color: var(--rose-deep);
+    border: 1px solid rgba(232,86,127,0.3);
+  }
+  .btn-ghost:hover{ background: var(--blush); }
+
+  @media (max-width: 480px){
+    .paper{ padding: 24px 18px 20px; }
+    textarea{ font-size: 1.3rem; line-height: 30px; min-height: 220px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .drift{ animation: none; display:none; }
+    .env-flap, .letter-peek, .paper, .overlay, .envelope{ transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<div class="stage">
+  <div class="title">
+    <h1>a little something for you</h1>
+    <p>tap the envelope to begin writing</p>
+  </div>
+
+  <div class="envelope-wrap">
+    <div class="envelope" id="envelope">
+      <div class="env-body"></div>
+      <div class="letter-peek" id="letterPeek">
+        <div class="lines"><span></span><span></span><span></span></div>
+      </div>
+      <div class="env-flap"></div>
+      <div class="seal">💌</div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">click to open</div>
+
+  <button class="btn btn-ghost" id="toggleBtn" style="margin-top:18px;">open envelope</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="paper" id="paper">
+    <div class="paper-head">
+      <h2>dear...</h2>
+      <button class="close-btn" id="closeBtn" aria-label="close">✕</button>
+    </div>
+
+    <div class="to-row">
+      <label for="toInput">to:</label>
+      <input id="toInput" type="text" placeholder="someone lovely" />
+    </div>
+
+    <div style="position:relative; flex:1; display:flex;">
+      <textarea id="messageBox" placeholder="start writing your letter here..."></textarea>
+      <div class="sticker-layer" id="stickerLayer"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// edit your letter here
+const letterConfig = {
+  to: "My Love",
+  message:
+`Every time I think of you, I smile without meaning to.
+
+Thank you for being exactly who you are — thank you for
+choosing me, every single day.
+
+I hope this little letter finds you smiling too.`,
+  // small decorations on the letter, position in %
+  stickers: [
+    { emoji: "🌸", x: 10, y: 8 },
+    { emoji: "💕", x: 85, y: 10 },
+    { emoji: "✨", x: 90, y: 70 },
+    { emoji: "🧸", x: 8,  y: 75 }
+  ]
+};
+
+(function(){
+  // floating stickers in the background
+  const sky = document.getElementById('sky');
+  const emojis = ['🌸','💗','✨','🎀','🧸','🌷'];
+  const count = window.innerWidth < 600 ? 10 : 16;
+  for(let i=0;i<count;i++){
+    const el = document.createElement('span');
+    el.className = 'drift';
+    el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.fontSize = (14 + Math.random()*18) + 'px';
+    const dur = 14 + Math.random()*16;
+    el.style.animationDuration = dur + 's';
+    el.style.animationDelay = (-Math.random()*dur) + 's';
+    sky.appendChild(el);
+  }
+
+  const envelope = document.getElementById('envelope');
+  const letterPeek = document.getElementById('letterPeek');
+  const overlay = document.getElementById('overlay');
+  const hint = document.getElementById('hint');
+  const closeBtn = document.getElementById('closeBtn');
+  const messageBox = document.getElementById('messageBox');
+  const toInput = document.getElementById('toInput');
+  const stickerLayer = document.getElementById('stickerLayer');
+  const paper = document.getElementById('paper');
+
+  const toggleBtn = document.getElementById('toggleBtn');
+  let opened = false;
+  let filled = false;
+
+  // fill in the letter, only once
+  function fillLetterFromConfig(){
+    if(filled) return;
+    filled = true;
+    toInput.value = letterConfig.to || '';
+    messageBox.value = letterConfig.message || '';
+    (letterConfig.stickers || []).forEach(s => addSticker(s.emoji, s.x, s.y));
+  }
+
+  function openOverlay(){
+    fillLetterFromConfig();
+    overlay.classList.add('show');
+  }
+
+  function openEnvelope(){
+    opened = true;
+    envelope.classList.add('open');
+    hint.textContent = 'now tap the letter to read';
+    toggleBtn.textContent = 'close envelope';
+  }
+
+  function closeEnvelope(){
+    opened = false;
+    envelope.classList.remove('open');
+    hint.textContent = 'click to open';
+    toggleBtn.textContent = 'open envelope';
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    opened ? closeEnvelope() : openEnvelope();
+  });
+
+  envelope.addEventListener('click', () => {
+    if(!opened){
+      openEnvelope();
+      return;
+    }
+    openOverlay();
+  });
+
+  closeBtn.addEventListener('click', () => {
+    overlay.classList.remove('show');
+  });
+  overlay.addEventListener('click', (e) => {
+    if(e.target === overlay) overlay.classList.remove('show');
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') overlay.classList.remove('show');
+  });
+
+  function addSticker(emoji, xPct, yPct){
+    const s = document.createElement('div');
+    s.className = 'placed-sticker';
+    s.textContent = emoji;
+    const rect = paper.getBoundingClientRect();
+    const x = (xPct !== undefined) ? (xPct/100) * rect.width  : 40 + Math.random()*(rect.width-100);
+    const y = (yPct !== undefined) ? (yPct/100) * rect.height : 60 + Math.random()*(rect.height-160);
+    s.style.left = x + 'px';
+    s.style.top = y + 'px';
+    stickerLayer.appendChild(s);
+  }
+
+})();
+</script>
+
+</body>
+</html>
